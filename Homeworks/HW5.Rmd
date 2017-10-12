@@ -1,0 +1,174 @@
+---
+title: "S631 HW5"
+author: "Erik Parker"
+date: "September 23, 2017"
+output: pdf_document
+---
+
+```{r setup, include=FALSE, message=FALSE, warning=FALSE, tidy=TRUE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE, tidy = TRUE)
+```
+
+### 1. Show the following equalities:
+
+#### a) $\sum_{i=1}^n(y_i-x_{i}^T\hat{\beta})^2 = (\pmb{Y} - \pmb{X}\hat{\pmb{\beta}})^T(\pmb{Y} - \pmb{X}\hat{\pmb{\beta}})$
+
+> From lecture, we know that $y_i$ represents a single observed value of a random variable, and there are 1:n of these observed values.  Furthermore, we know that $x_{i}^T$ is the transpose of all regressors used to construct a linear model in relation to our observed $y_i$, with 1:p different regressors for the 1:n observations.  Finally, $\hat{\beta}$ is a vector of unknown regression coefficients ($\pmb{\beta} = \beta_0,\beta_1,...,\beta_p$) related to the regression of our $x_i$'s on $y_i$.  With the summation of these terms, we are able to combine all of the individual values into matrices of dimension $nX1$ (for $\pmb{Y}$), $nX(p+1)$ (for $\pmb{X}$), and $(p+1)X1$ (for $\pmb{\beta}$) as we are now dealing not with the individual values but their summations.
+
+> With this, we can then see that the RHS of this equality, when expressed with the dimensions of the matrices, becomes 
+
+$$ (\pmb{Y}_{nX1} - \pmb{X}_{nX(p+1)}\hat{\pmb{\beta}}_{(p+1)Xn})^T(\pmb{Y}_{nX1} - \pmb{X}_{nX(p+1)}\hat{\pmb{\beta}}_{(p+1)Xn}) $$
+
+> which when simplified becomes
+
+$$ (\pmb{Y}^T_{1Xn} - \hat{\pmb{\beta}}\pmb{X}_{1Xn})(\pmb{Y}_{nX1} - \pmb{X}\hat{\pmb{\beta}}_{nX1}) $$
+
+> and then 
+
+$$ (\pmb{Y}^T - \hat{\pmb{\beta}}\pmb{X})_{1Xn}(\pmb{Y} - \pmb{X}\hat{\pmb{\beta}})_{nX1} $$
+
+> From this we can see that the final product of the RHS is a 1X1 scalar.  This means that the final product of the LHS also must be a 1X1 scalar.
+
+> Furthermore, from chapter 3.4.2 of ALR and our class notes, we know that $y_i = x_{i}^T\beta + e_i$ and so, $y_i - x_{i}^T\hat{\beta}$ is equal to the random vector of errors $e_i$ and that the summation of these errors is a $nX1$ matrix where $\pmb{e} = (e_1,...,e_n)^T$.  
+This means 
+
+$$\sum_{i=1}^n(y_i-x_{i}^T\hat{\beta})^2$$ 
+
+> can be written as 
+
+$$\sum_{i=1}^n{e_i}^2 = \pmb{e}^2$$
+
+> and in order to conclude with a 1X1 scalar as the final product, we can then express this as 
+
+$$\pmb{e}^2 = \pmb{e}_{1Xn}^T\pmb{e}_{nX1} \\ 
+~~~and~~so~~~  \\
+\pmb{e}^T\pmb{e} =(\pmb{Y} - \pmb{X}\hat{\pmb{\beta}})^T(\pmb{Y} - \pmb{X}\hat{\pmb{\beta}})$$ 
+
+> therefore 
+
+$$\sum_{i=1}^n(y_i-x_{i}^T\hat{\beta})^2 = (\pmb{Y} - \pmb{X}\hat{\pmb{\beta}})^T(\pmb{Y} - \pmb{X}\hat{\pmb{\beta}})$$
+
+
+#### b. $\pmb{H}$ is symmetric and idempotent
+
+> First, recall that $\pmb{H} = \pmb{X}(\pmb{X^TX})^{-1}\pmb{X}^T$.  Also, for $\pmb{H}$ to be symmetric means $\pmb{H} = \pmb{H}^T$, and to be idempotent means $\pmb{H}\pmb{H} = \pmb{H}$.
+
+> Now, to show $\pmb{H}$ is symmetric:
+
+$$\begin{aligned}
+\pmb{H}^T &= \pmb{H}
+\\ (\pmb{X}(\pmb{X}^T\pmb{X})^{-1}\pmb{X}^T)^T &= \pmb{X}(\pmb{X}^T\pmb{X})^{-1}\pmb{X}^T
+\\proving~~the~~left~~side&
+\\\pmb{X}((\pmb{X}^T\pmb{X})^{-1})^{T}\pmb{X}^T&
+\\\pmb{X}(\pmb{X}^{-1}(\pmb{X}^{-1})^T)^{T}\pmb{X}^T&
+\\\pmb{X}(\pmb{X}^{-1}(\pmb{X}^T)^{-1})\pmb{X}^T&
+\\\pmb{X}(\pmb{X}^T\pmb{X})^{-1}\pmb{X}^T &= \pmb{H}
+\\\blacksquare&
+\end{aligned}$$
+
+> Now, to show $\pmb{H}$ is idempotent:
+
+$$\begin{aligned}
+\pmb{H}^2 &= \pmb{H}
+\\proving~~the~~left~~side&
+\\(\pmb{X}(\pmb{X}^T\pmb{X})^{-1}\pmb{X}^T_{p+1Xn})(\pmb{X}_{nXp+1}(\pmb{X}^T\pmb{X})^{-1}\pmb{X}^T)
+\\\pmb{X}(\pmb{X}^T\pmb{X})^{-1}_{p+1Xp+1}(\pmb{X}^T\pmb{X})_{p+1Xp+1}(\pmb{X}^T\pmb{X})^{-1}\pmb{X}^T
+\\using~~~AA^{-1} = I~~~from~~matrix~~handout
+\\\pmb{X}_{nXp+1}I_{p+1}(\pmb{X}^T\pmb{X})^{-1}\pmb{X}^T
+\\using~~~A_{nXm}I_m = A_{nXm}
+\\\pmb{X}(\pmb{X}^T\pmb{X})^{-1}\pmb{X}^T &= \pmb{H} 
+\\\blacksquare
+\end{aligned}$$
+
+
+#### c. $\pmb{I - H}$ is symmetric and idempotent
+
+> Now, to show $\pmb{I - H}$ is symmetric:
+
+$$\begin{aligned}
+(\pmb{I - H})^T &= \pmb{I - H}
+\\\pmb{I}^T - \pmb{H}^T &= \pmb{I - H}
+\\from~~part~~&b~~we~~know~~~\pmb{H}^T=\pmb{H} 
+\\we~~also~~k&now~~~ \pmb{I}^T = \pmb{I}
+\\so~~~ \pmb{I - H} &= \pmb{I - H}~~~ 
+\\\blacksquare
+\end{aligned}$$
+
+> Now, to show $\pmb{I - H}$ is idempotent:
+
+$$\begin{aligned}
+(\pmb{I - H})^2 &= \pmb{I - H}
+\\proving~~the~~left~~side&
+\\(\pmb{I - H})(\pmb{I - H})&
+\\\pmb{I}^2 - \pmb{IH} - \pmb{HI} + \pmb{H}^2&
+\\we~~know~~~\pmb{I}^2=\pmb{I}~,~~\pmb{IH}~~and~~\pmb{HI}=\pmb{H}~~as&~~\pmb{H}_n~~and~~\pmb{I}_n~,~~and~~from~~b~~\pmb{H}^2 = \pmb{H}
+\\so
+\\\pmb{I} - 2\pmb{H} + \pmb{H}&
+\\\pmb{I-H} &= \pmb{I-H}~~~ 
+\\\blacksquare
+\end{aligned}$$
+
+
+#### d. $\pmb{HX} = \pmb{X}$.
+
+> First, recall from part b that $AA^{-1} = I$ and $A_{nXm}I_m = A_{nXm}$.
+
+$$\begin{aligned}
+\pmb{HX} &= \pmb{X}
+\\proving~~left~side&
+\\(\pmb{X}(\pmb{X^TX})^{-1}\pmb{X}^T)\pmb{X}&
+\\\pmb{X}(\pmb{X^TX})^{-1}(\pmb{X}^T\pmb{X})&
+\\\pmb{X}\pmb{I} &= \pmb{X}
+\\\blacksquare
+\end{aligned}$$
+
+
+#### e. $(\pmb{I - H})(\pmb{Y - X\hat{\beta}}) = (\pmb{I - H})\pmb{Y}$
+
+> For this proof, first recall from class notes, and ALR chapter 9.1 that $\pmb{X\hat{\beta}} = \pmb{\hat{Y}}$.  Also recall from problem d that $\pmb{HX} = \pmb{X}$. Finally, recall again that$A_{nXm}I_m = A_{nXm}$.
+
+$$\begin{aligned}
+(\pmb{I-H})(\pmb{Y-X\hat{\beta}}) &= (\pmb{I-H})\pmb{Y}
+\\proving~~the~~left~~side&
+\\\pmb{IY-IX}\hat{\pmb{\beta}}-\pmb{HY+HX}\hat{\pmb{\beta}}&
+\\\pmb{IY-I}_{n}\hat{\pmb{Y}}_{nX1}-\pmb{HY+X}\hat{\pmb{\beta}}&
+\\\pmb{IY-\hat{Y}-HY+\hat{Y}}&
+\\\pmb{IY-HY}&
+\\(\pmb{I-H})\pmb{Y}&
+\\\blacksquare
+\end{aligned}$$
+
+
+#### f. $(\pmb{Y-X\hat{\beta}})^T(\pmb{I - H})(\pmb{Y - X\hat{\beta}}) = \pmb{Y}^T(\pmb{I - H})\pmb{Y}$
+
+> First, recall from problem d that $\pmb{HX} = \pmb{X}$, also from problem e that $(\pmb{I - H})(\pmb{Y - X\hat{\beta}}) = (\pmb{I - H})\pmb{Y}$, also from part b $A_{nXm}I_m = A_{nXm}$, finally from ALR chapter 9.1, if $\pmb{X\hat{\beta}} = \pmb{\hat{Y}}$ then $(\pmb{X\hat{\beta}})^T = \pmb{\hat{Y}}^T$.
+
+$$\begin{aligned}
+(\pmb{Y-X\hat{\beta}})^T(\pmb{I - H})(\pmb{Y - X\hat{\beta}}) &= \pmb{Y}^T(\pmb{I - H})\pmb{Y}
+\\proving~LHS&
+\\(\pmb{Y-X\hat{\beta}})^T(\pmb{I - H})\pmb{Y}&
+\\(\pmb{Y^TI - Y^TH - \hat{\beta}^TX^TI + \hat{\beta}^TX^TH})\pmb{Y}&
+\\(\pmb{Y^TI - Y^TH - \hat{Y}}_{1Xn}^T\pmb{I}_n + \hat{\pmb{\beta}}^T\pmb{X}^T)\pmb{Y}&
+\\(\pmb{Y}^T\pmb{I} - \pmb{Y}^T\pmb{H} - \hat{\pmb{Y}}^T + \hat{\pmb{Y}}^T)\pmb{Y}&
+\\\pmb{Y}^T(\pmb{I-H})\pmb{Y}&
+\\\blacksquare
+\end{aligned}$$
+
+
+#### g. $RSS(\hat{\beta}) = \pmb{Y}^T(\pmb{I-H})\pmb{Y}$
+
+> For this proof, recall that $RSS(\hat{\beta}) = (\pmb{Y} - \pmb{X}\hat{\pmb{\beta}})^T(\pmb{Y} - \pmb{X}\hat{\pmb{\beta}})$, also from ALR 9.1 that $\pmb{Y-\hat{Y}} = (\pmb{I-H})\pmb{Y}$, from problem c that $(\pmb{I-H})$ is symmetric and idempotent, and finally from problem f that $\pmb{X\hat{\beta}} = \pmb{\hat{Y}}$.
+
+$$\begin{aligned}
+RSS(\hat{\beta}) &= \pmb{Y}^T(\pmb{I-H})\pmb{Y}
+\\proving~LHS&
+\\(\pmb{Y-X\hat{\beta}})^T(\pmb{Y-X\hat{\beta}})&
+\\((\pmb{I-H})\pmb{Y})^T(\pmb{I-H})\pmb{Y}&
+\\\pmb{Y}^T(\pmb{I-H})^T(\pmb{I-H})\pmb{Y}&
+\\\pmb{Y}^T(\pmb{I-H})(\pmb{I-H})\pmb{Y}&
+\\\pmb{Y}^T(\pmb{I-H})\pmb{Y}&
+\\\blacksquare
+\end{aligned}$$
+
+
+

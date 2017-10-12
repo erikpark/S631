@@ -1,0 +1,192 @@
+---
+title: "S631 HW2"
+author: "Erik Parker"
+date: "September 2, 2017"
+output: pdf_document
+---
+
+```{r setup, include=FALSE, message=FALSE, warning=FALSE, tidy=TRUE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE, tidy = TRUE)
+```
+
+```{r}
+
+library("alr4")
+
+UN <- UN11
+
+UN$fertility <- round(UN$fertility, 0)
+
+fertility <- round(UN$fertility, 0)
+
+lifeExpF <- UN$lifeExpF
+
+```
+
+##1. Assume the data is the entire population of interest, *S* = {set of all UN members}.  Let female life expectancy, $lifeExpF$, be the response variable and $fertility$ (rounded to the nearest integer) the predictor.  Obtain the following results:
+
+###a) Find the expected value and the variance of $lifeExpF$
+
+```{r}
+
+mean(lifeExpF)
+
+var(lifeExpF)
+
+```
+
+### b) Find the expected value of $lifeExpF$ given that $fertility = i$ where $i = 1,...,7.$
+
+```{r}
+
+mean(UN[fertility == 1, 5])
+mean(UN[fertility == 2, 5])
+mean(UN[fertility == 3, 5])
+mean(UN[fertility == 4, 5])
+mean(UN[fertility == 5, 5])
+mean(UN[fertility == 6, 5])
+mean(UN[fertility == 7, 5])
+
+```
+
+> So, using the $mean()$ command, to find the expected value of $LifeExpF$ when $fertility$ is equal to 1-7, we find that in general, female life expectancy seems to decrease with increasing fertility.
+
+### c) Find the variance of $LifeExpF$ given that $fertility = i$ where $i = 1,...,7.$
+
+```{r}
+
+var(UN[fertility == 1, 5])
+var(UN[fertility == 2, 5])
+var(UN[fertility == 3, 5])
+var(UN[fertility == 4, 5])
+var(UN[fertility == 5, 5])
+var(UN[fertility == 6, 5])
+var(UN[fertility == 7, 5])
+
+
+```
+
+> Using the $var()$ command to find the conditional variance of $LifeExpF$ for the countries with $fertility$ equal to 1-7, we can see that there is no linear pattern to this statistic, as opposed to what was seen from the expected value.  
+
+
+## 2. Here we will study the dependence of $fertility$ on $ppgdp.$
+
+### a) Identify the predictor and the response.
+
+> In this problem, we are studying the dependence of $fertility$ on $ppgdp$, meaning that $ppgdp$ is the predictor and $fertility$ is the response variable.
+
+### b) Draw the scatterplot of $fertility$ on the y axis versus $ppgdp$ on the x axis.  Does a straight-line mean function seem to be plausible for a summary of this graph?
+
+```{r}
+
+plot(UN$ppgdp, UN$fertility, xlab = "GDP per person", ylab = "fertility")
+
+```
+
+> The large variance in values of $ppgdp$ (from 0 to 100,000) makes this plot quite hard to accurately interpret.  But that said, it does seem as though there is an overall decrease in fertility as gross national product per person decreases, though we can not say which of these variables, if either, is causal to this relationship.  
+> A straight-line mean function seems to not be the best summary of the data shown in this graph, but could be plausible.
+
+### C) Draw a ln transformed scatterplot of the two variables in the previous plot.  Does the simple linear regression model seem plausible as a summary?
+
+```{r}
+
+plot(log(UN$ppgdp), log(UN$fertility), xlab = "log GDP per person", ylab = "log fertility")
+
+```
+
+> When we log transform $fertility$ and $ppgdp$, it becomes much more clear that a simple, decreasing, linear regression between the two variables would serve as a plausible summary for the relationship between these data.
+
+
+## 3. Using the data file $wblake$, compute the means and variances for each of the eight subpopulations.  Draw a graph of the average length versus $Age$ and compare with Figure 1.5.  Draw a graph of the standard deviations versus age.  Summarize the information.
+
+### a) Means and variances of each of eight subpopulations.
+
+```{r}
+
+bass <- wblake
+
+age1 <- bass[bass$Age == 1,]
+age2 <- bass[bass$Age == 2,]
+age3 <- bass[bass$Age == 3,]
+age4 <- bass[bass$Age == 4,]
+age5 <- bass[bass$Age == 5,]
+age6 <- bass[bass$Age == 6,]
+age7 <- bass[bass$Age == 7,]
+age8 <- bass[bass$Age == 8,]
+
+
+mean(age1$Length)
+mean(age1$Scale)
+var(age1$Length)
+var(age1$Scale)
+
+mean(age2$Length)
+mean(age2$Scale)
+var(age2$Length)
+var(age2$Scale)
+
+mean(age3$Length)
+mean(age3$Scale)
+var(age3$Length)
+var(age3$Scale)
+
+mean(age4$Length)
+mean(age4$Scale)
+var(age4$Length)
+var(age4$Scale)
+
+mean(age5$Length)
+mean(age5$Scale)
+var(age5$Length)
+var(age5$Scale)
+
+mean(age6$Length)
+mean(age6$Scale)
+var(age6$Length)
+var(age6$Scale)
+
+mean(age7$Length)
+mean(age7$Scale)
+var(age7$Length)
+var(age7$Scale)
+
+mean(age8$Length)
+mean(age8$Scale)
+var(age8$Length)
+var(age8$Scale)
+
+
+```
+
+### Graph of average length versus $Age$ and compare with Figure 1.5.
+
+```{r}
+
+library(ggplot2)
+
+mean.lengths <- c(mean(age1$Length), mean(age2$Length), mean(age3$Length), mean(age4$Length), mean(age5$Length), mean(age6$Length), mean(age7$Length), mean(age8$Length))
+mean.lengths <- as.data.frame(mean.lengths)
+mean.lengths$Age <- c("1", "2", "3", "4", "5", "6", "7", "8")
+
+
+ggplot(mean.lengths, aes(x = Age, y = mean.lengths)) + geom_point() + labs(y = "Average length")
+
+```
+
+> Though I chose to represent the average lengths of the fish of different ages with dots instead of a line, my plot closely resembles the relationship shown in figure 1.5.
+
+
+### Graph of standard deviations versus age.
+
+```{r}
+
+sd.lengths <- c(sqrt(var(age1$Length)), sqrt(var(age2$Length)), sqrt(var(age3$Length)), sqrt(var(age4$Length)), sqrt(var(age5$Length)), sqrt(var(age6$Length)), sqrt(var(age7$Length)), sqrt(var((age8$Length))))
+sd.lengths <- as.data.frame(sd.lengths)
+sd.lengths$Age <- c("1", "2", "3", "4", "5", "6", "7", "8")
+
+ggplot(sd.lengths, aes(x = Age, y = sd.lengths)) + geom_point() + labs(y = "average sd of length")
+
+```
+
+> Overall, these data show that in general the average length of smallmouth bass from West Bearskin lake increases linearally with age.  However, unsuprisingly, the variance and standard deviations of these fish lengths do not show the same relationship.  The standard deviation plot does hint at a general pattern of higher deviations in age subpopulations with fewer observations, and lower values in populations with more samples - following the prediction of the law of large numbers whereby a sample mean approaches the population mean as the sample size increases, and thus the standard deviation will also decrease.
+

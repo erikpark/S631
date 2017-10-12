@@ -1,0 +1,192 @@
+---
+title: "S631 HW3"
+author: "Erik Parker"
+date: "September 12, 2017"
+output: pdf_document
+---
+
+```{r setup, include=FALSE, message=FALSE, warning=FALSE, tidy=TRUE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE, tidy = TRUE)
+```
+
+
+
+### 1. Show that $\hat{\beta_0}$ and $\hat{\beta_1}$ can be written as linear combinations $y_1,...,y_n$
+
+$$\hat{\beta_0} = \sum_{i=1}^n a_i y_i ~~~and~~~ \hat{\beta_1} = \sum_{i=1}^n b_i y_i ~~~where~~~ a_1,...,a_n ~~~and~~~ b_1,...b_n \in \mathbb{R}$$
+
+because we know from ALR page 24 that $\hat{\beta_0} = \bar{y} - \hat{\beta_1}\bar{x}$ and $\hat{\beta_1} = SXY/SXX$
+
+where, from Table 2.1, page 23 we know:
+
+$$\begin{aligned}
+SXX = \sum(x_i-\bar{x})x_i ~~~and~~~ SXY = \sum(x_i-\bar{x})y_i 
+\\ so~~~ \hat{\beta_1} = \sum\frac{(x_i-\bar{x})y_i}{(x_i-\bar{x})x_i} =\sum\frac{(x_i-\bar{x})}{(x_i-\bar{x})x_i}y_i = \sum(b_iy_i) 
+\\ where~~~ b_i = \frac{(x_i-\bar{x})}{(x_i-\bar{x})x_i}  \end{aligned} $$
+
+Furthermore, and using this $\hat{\beta_1}$:
+
+$$\begin{aligned}
+\hat{\beta_0} = \bar{y} - (\sum\frac{(x_i-\bar{x})}{(x_i-\bar{x})x_i}y_i)\bar{x} = \sum\frac{1}{n}y_i - (\sum\frac{(x_i-\bar{x})}{(x_i-\bar{x})x_i}y_i)\bar{x} = \sum(\frac{1}{n} - \frac{(x_i-\bar{x})}{(x_i-\bar{x})x_i}\bar{x})y_i = \sum(a_iy_i)
+\\ where~~~ a_i = \frac{1}{n} - \frac{(x_i-\bar{x})}{(x_i-\bar{x})x_i}\bar{x} = \frac{1}{n}-b_i\bar{x}
+\end{aligned}$$
+
+
+### 2. The bank, UBS, regularly reports on prices and earnings in major cities throughout the world.  Three included measures are prices of commodities (1kg of rice, 1kg of bread, and the price of a Big Mac).  Prices are measured in minutes of labor required for a typical worker to buy these goods.  
+
+#### 1) The line $y=x$ is shown on the plot as the solid line.  What is the key difference between points above and below this line?
+
+> Points falling above the line $y=x$ saw an increase in the price, in terms of number of hours worked, from year 2003 to 2009.  While points falling below the line saw a decrease in in cost from 2003 to 2009.
+
+#### 2) Which cities had the largest increases and decreases in rice price?
+
+> The city showing the largest increase in rice price on this plot is Vilnius, followed closely by Budapest.  Conversely, the city showing the largest decrease in rice price from 2003 to 2009 is Mumbai followed (not so closely) by Nairobi.
+
+#### 3) Does the dashed line, representing the OLS line, with a slope < 1 suggest that prices are lower in 2009 than in 2003?
+
+> Setting aside potential problems with the use of OLS here, the line with the of < 1 does seem to be suggesting that prices are lower in 2009 than in 2003, but only for locations where the 2003 rice price was greater than ~25.  Before this point (where the majority of the data are), this model shows that rice prices were actually greater in 2009 than in 2003.
+
+#### 4) Give two reasons why simple linear regression is not likely appropriate for this problem.
+
+> First, there are a few outliers which are quite far from the majority of points and may be serving as strong leverage points and skewing the model.  Secondly, the majority of the data used to create the model here is clustered around low x and y values, so this slope of the OLS line is generated mostly by the few outlying points to the right of the plot. This means that it is hard to generate a model that is of much explanatory use for larger x values as there are just too few of them.
+
+
+### 3. Simulation.  Assume the simple linear regression model 
+
+$$ y_i = \beta_0 + \beta_1x_i+e_i, ~~~~ i=1,...,n $$
+
+### where $e_i \sim N(0,\sigma^2)$ for $i = 1,...,n.$
+### Let's set $\beta_0 = 10, \beta_1 = -2.5, ~and~ n = 30.$
+
+#### a) Set $\sigma = 100, ~and~ x_i = i ~for~ i = 1,...,n.$
+
+```{r}
+
+beta0 <- 10
+beta1 <- -2.5
+n <- 30
+sigma <- 100
+
+xi <- rep(0,n)
+for (i in 1:n){
+  xi[i] = i
+}
+
+```
+
+#### b) Simulation will have 10,000 iterations.  Set a random seed using birthday (0330) and report the seed with responses.  For each iteration, obtain and store linear regression parameter estimates: $\hat\beta_0$'s, $\hat\beta_1$'s, and $\hat\sigma^2$'s.
+
+```{r}
+
+set.seed(0330)
+sim <- 10000
+bh0.vec <- rep(0,sim)
+bh1.vec <- rep(0,sim)
+sig2.vec <- rep(0,sim)
+
+for (i in 1:sim){
+   e <- rnorm(n, mean = 0, sd = sigma)
+  y <- beta0+beta1*xi+e
+  m1 <- lm(y ~ xi)
+  bh0.vec[i] <- coef(m1)[1]
+  bh1.vec[i] <- coef(m1)[2]
+  sig2.vec[i] <- sum(e^2)/n-2
+}
+
+```
+
+> $\hat\sigma^2$ obtained by taking $\frac{RSS}{n-2}$ where $RSS = \sum\hat{e}_i^2$
+
+#### c) Present three histograms for $\hat\beta_0$, $\hat\beta_1$, and $\hat\sigma^2$. Describe the main charactersitics of these histograms.
+
+```{r}
+
+hist(bh0.vec)
+hist(bh1.vec)
+hist(sig2.vec)
+
+```
+
+> All three of these histograms show generally bell shaped distributions, with the plotted values of $\hat\beta_0$ and $\hat\beta_1$ following close to a symmetric, normal distribution, and the values of $\hat\sigma^2$ following a slightly right-skewed distribution.
+
+#### d) Find the averages of our estimates, how do they compare with the true parameters?
+
+```{r}
+
+mean(bh0.vec)
+mean(bh1.vec)
+sqrt(mean(sig2.vec))
+
+```
+
+> The averages of our estimated values are very close to the values of the true parameters supplied in the beginning of the simulation.  This makes sense as we did 10,000 iterations of our simulation, and we expect our estimated values to move closer to the true values as the number of samples increases.
+
+#### e) Find the sample variances of $\hat\beta_0$'s and $\hat\beta_1$'s.  How do they compare with the true variances?
+
+```{r}
+
+var(bh0.vec)
+
+var(bh1.vec)
+
+xbar <- sum(xi)/n
+
+sxx <- sum(xi^2)-n*mean(xi)^2
+
+varb0 <- sigma^2*((1/n)+(xbar^2)/sxx)
+varb0
+
+varb1 <- sigma^2*(1/sxx)
+varb1
+
+```
+
+> The sample variances calculated from $\hat\beta_0$ and $\hat\beta_1$ are quite close to the true variances calculated using the formulas found in the book, and the original starting $x$ and $\sigma$ values. The variance of $\beta_0$ is larger and is off by only 26 between the estimate and parameter, while the variance $\beta_1$ is off by about 0.1 between the two.
+
+#### f) Now set $\sigma = 100, ~and~ x_i = 100*i ~for~ i = 1,...,n.$ Repeat parts b, d, and e.  How does the new sample variance of $\hat\beta_0$'s and $\hat\beta_1$'s compare with the previous result?
+
+```{r}
+
+xib <- rep(0,n)
+for (i in 1:n){
+  xib[i] = i*100
+}
+
+set.seed(0330)
+sim <- 10000
+bh0b.vec <- rep(0,sim)
+bh1b.vec <- rep(0,sim)
+sig2b.vec <- rep(0,sim)
+
+for (i in 1:sim){
+   e <- rnorm(n, mean = 0, sd = sigma)
+  y <- beta0+beta1*xib+e
+  m1b <- lm(y ~ xib)
+  bh0b.vec[i] <- coef(m1b)[1]
+  bh1b.vec[i] <- coef(m1b)[2]
+  sig2b.vec[i] <- sum(e^2)/n-2
+}
+
+
+mean(bh0b.vec)
+mean(bh1b.vec)
+sqrt(mean(sig2b.vec))
+
+xbarb <- sum(xib)/n
+
+sxxb <- sum(xib^2)-n*mean(xib)^2
+
+varb0 <- sigma^2*((1/n)+(xbarb^2)/sxxb)
+varb0
+
+
+var(bh0b.vec)
+
+varb1 <- sigma^2*(1/sxxb)
+varb1
+
+var(bh1b.vec)
+
+```
+
+> The sample variance, and true variance, of $\beta_0$ is roughly the same as it was in part e when we had different values for xi. The variance of $\beta_1$, on the other hand, is much lower than it was before.  This is because of the structre of the two variance expressions.  $Var(\beta_1) = \sigma^2 * \frac{1}{SXX}$ has all the x terms on the bottom of a fraction, while $\beta_0$ has an $\bar{x}^2$ above $SXX$.  This means that the larger $xi$ values used in part f are reducing the variance of $\beta_1$ by a lot, as they are leading to a very small $\frac{1}{SXX}$ term, while the $x$'s are more balanced in the $\beta_0$ term.
