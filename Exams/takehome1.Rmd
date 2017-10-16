@@ -62,7 +62,7 @@ ggplot(m1, aes(.fitted, .resid)) + geom_point() + geom_smooth() + labs(title = "
 
 ```
 
-> Based on these plots, I don't see any clear violations of the linear model assumptions.  From the first plot of log(population) vs crime rate, we can see that there is a pretty clear increasing, linear, relationship between the regressor and response.  There is no obvious curviture to the data, there are no obvious, egregious outliers present, and despite the higher concentration of points at lower population levels, there is still a pretty good spread of points along the X axis.  The second plot showing the residuals vs the fitted values for the regression also seems to have no real issues.  It closely resembles a null-plot as we see no real pattern to the data, there is no cone shape to the data indicating that the variance increases or decreases over different fitted values, and this data can be well summarized by a straight line.
+> Based on these plots, I don't see any clear violations of the linear model assumptions.  From the first plot of log(population) vs crime rate, we can see that there is a pretty clear increasing, linear, relationship between the regressor and response.  There is no obvious curviture to the data, there are no obvious, egregious outliers present, and despite the higher concentration of points at lower population levels, there is still a pretty good spread of points along the X axis.  The second plot showing the residuals vs the fitted values for the regression also seems to have no real issues.  It closely resembles a null-plot as we see no real pattern to the data, there is no cone shape to the data indicating that the variance increases or decreases over different fitted values, and this data can be well summarized by a straight line at $Y = residual = 0$.
 
 #### b. Interpret the estimate $\hat{\beta}_1$, explain the underlying hypothesis test assumed in the R output, and interpret the results of the test.
 
@@ -105,7 +105,7 @@ summary(lm(crime ~ log(population) + log(density), data = cities))
 
 ```
 
-> As discussed above, the effect that *population* (specifically the log of population) has on *crime* is positive and significant in both models.  The main difference between the two, is that the influence of *population* is actually greater in the multiple regression compared to the single one when we consider the value for $\hat{\beta}_1$.  This is a bit confusing, as when adding variables to a multiple regression we might most often expect to see a *decrease* in influence as different variables can often explain the same variation and so when they are added last to the model there is already another variable present which explains the same variation they do, so their effect is less than when they are in a single regression model alone.  Here though, we see that the additional influence of log(population) on crime rate when the contributions of the other regressors are accounted for than when we consider the influence of log(population) on crime rate by itself.  Why is this?  It could be a meaningless difference, as the significance from the hypothesis test given by the p-value for $\beta_1$ of log(population) is actually slightly lower in the multiple regression, and the standard error is higher, meaning that the difference between the coefficients between the two models could be just due to "noise" and not any real effect.  Alternatively, we can see that the regressor log(density) has a marginally non-significant and negative slope estimate when added to the multiple regression.  So it could be that the inclusion of this regressor leads to a compensatory increase in the slope of log(population) when added last to our model.  This idea is suppoted by the multiple regression shown above between just the log of population and density.  There we see that the slope of log(population) increases a great deal over it's single regression and full multiple regression model values, suggesting that the slope is increasing in these instances to counteract the influence of log(density) which is even less significant when added last to a model just containg log(population).
+> As discussed above, the effect that *population* (specifically the log of population) has on *crime* is positive and significant in both models.  The main difference between the two, is that the influence of *population* is actually greater in the multiple regression compared to the single one when we consider the value for $\hat{\beta}_1$.  This is a bit confusing, as when adding variables to a multiple regression we might most often expect to see a *decrease* in influence as different variables can often explain the same variation and so when they are added last to the model there is already another variable present which explains the same variation they do, so their effect is less than when they are in a single regression model alone.  Here though, we see that the additional influence of log(population) on crime rate when the contributions of the other regressors are accounted for than when we consider the influence of log(population) on crime rate by itself.  Why is this?  It could be a meaningless difference, as the significance from the hypothesis test given by the p-value for $\beta_1$ of log(population) is actually slightly lower in the multiple regression, and the standard error is higher, meaning that the difference between the coefficients between the two models could be just due to "noise" and not any real effect.  Alternatively, we can see that the regressor log(density) has a marginally non-significant and negative slope estimate when added to the multiple regression.  So it could be that the inclusion of this regressor leads to a compensatory increase in the slope of log(population) when added last to our model.  This idea is suppoted by the multiple regression shown above between just the log of population and density.  There we see that the slope of log(population) increases a great deal over its single regression and full multiple regression model values, suggesting that the slope is increasing in these instances to counteract the influence of log(density) which is even less significant when added last to a model just containg log(population).
 
 > So overall, it seems fairly likely that the effect of *population* on *crime* is increasing between the first and second model due most to the presence of *density*.
 
@@ -137,7 +137,9 @@ summary(lm(crime ~ log(nonwhite) + log(population), data = cities))$r.squared
 
 ```{r}
 
-confint(m2, level = 0.98)
+mbest <- lm(crime ~ log(population) + log(density) + log(nonwhite), data = cities)
+
+confint(mbest, level = 0.98)
 
 ```
 
@@ -147,11 +149,12 @@ confint(m2, level = 0.98)
 
 ```{r}
 
-newdata <- data.frame(population = 1150)
-predict(m1, newdata, interval = "predict", level = 0.99)
+summary(cities)
+newdata <- data.frame(population = 1150, nonwhite = 7.2, density = 412)
+predict(mbest, newdata, interval = "predict", level = 0.99)
 
-# Because we are only conditioning on population here, we need to use a model that contains population as the only predictor.
+# I want to use my chosen model, which contains all the regressors, so I need to assign arbitrary values for density and nonwhite.  I chose the population median values from the summary table for this purpose.
 
 ```
 
-> So using our single linear regression model, we can say with 99% confidence that the crime rate for a city with a population of 1.15 million would be between 775.89 and 5234.33 per 100,000 people.
+> So using my chosen multiple linear regression model, I can say with 99% confidence that the crime rate for a city with a population of 1.15 million (and nonwhite percentage of 7.2, as well as density of 412 people/$mi^2$) would be between 1016.68 and 5072.81 per 100,000 people.
