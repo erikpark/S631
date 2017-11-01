@@ -1,0 +1,146 @@
+---
+title: "S631 HW8"
+author: "Erik Parker"
+date: "October 21, 2017"
+output: pdf_document
+---
+
+```{r setup, include=FALSE, message=FALSE, warning=FALSE, tidy=TRUE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE, tidy = TRUE)
+```
+
+### 1. After viewing the *Robey* data, it seems most reasonable to use the variable *tfr* as the response and *region* and *contraceptors* as the two predictors.
+
+#### a) Perform a one-factor design analysis with the appropriate variables and determine if there are significant differences on the response when *region = Africa vs region = Near.East* and when *region = Asia vs region = Latin.Amer.*
+
+```{r}
+
+rm(list=ls())
+
+repro <- read.table("./Robey.txt")
+
+m1 <- lm(tfr ~ region, data = repro)
+
+summary(m1)
+
+```
+
+> From this first model, we can easily see that the estimated change in total fertility rate (*tfr*) when moving from *Africa* to the *Near.East* region is a decrease of 1.0556 units.  This is easy to see because *regionAfrica* is our first category, so is dropped from the model and becomes the intercept coefficient, $\hat{\beta}_0$.  So the change when moving from Africa to the near east is shown by the esimated coefficient for *regionNear.East*, $\hat{\beta}_4$.  The accompanying p-value of 0.0544 for the hypothesis test that $\beta_4 = 0$ means that we can't reject the hypothesis that there is no change in *tfr* when moving from *Africa* to *Near.East* when tested at an alpha of $0.05$ though.
+
+```{r}
+
+a=c(0,1,-1,0)
+se_b2b3=sqrt(t(a)%*%vcov(m1)%*%a)
+se_b2b3
+b2b3=as.numeric(coef(m1)[2]-coef(m1)[3])
+t_val=b2b3/se_b2b3
+p_val=2*(1-pt(abs(t_val),m1$df))
+c("b2-b3"=b2b3,"SE"=se_b2b3,"t-Value"=t_val,"p-Value"=p_val)
+
+```
+> From the above test, we can see that when we move from *Asia* to *Latin.Amer.*, we cannot reject the null hypothesis that there is no change in the response variable.  So, in other terms: there is no significant difference on the expected response when we move from the asian to latin american region.
+
+
+#### b) Explain what each regression coefficient means and write out the mean function for each category of the factor.
+
+> As briefly mentioned earlier, the first regression coefficient for the intercept actually corresponds to the expected value of our response (*tfr*) when the region = *Africa*.  The corresponding mean function for this category is $E(Y|U_1=1) = \beta_0$
+
+> The second regression coefficient of -2.3156, for *regionAsia* corresponds to $\hat{\beta}_1$ and is the estimated change in the response when we move from the first category of the factor (*regionAfrica*) to the second.  This means that as we move from Africa to Asia, the estimated total fertilty rate drops 2.32 from 5.86, to 3.54.  The corresponding mean function here is $E(Y|U_2=1) = \beta_0 + \beta_2$
+
+> The third coefficient of -1.8056 from our model corresponds to $\hat{\beta}_2$ and represents the estimated change in the response as we move from *regionAfrica* to *regionLatin.America*.  So, as we move from Africa to Latin America, the estimated fertility rate drops to 4.05.  The mean function for this category is given by $E(Y|U_3=1) = \beta_0 + \beta_3$.
+
+> The fourth and final coefficient of our model is -1.0556 and is non-significant at $\alpha=0.05$.  This means that as we move from *regionAfrica* to *regionNear.East* we can't reject the possibility that there is no estimated change in the total fertility rate.  This category's mean function is given by $E(Y|U_4=1) = \beta_0 + \beta_4$.
+
+
+#### c) Obtain and describe "effects" plot for this model
+
+```{r}
+
+library(alr4)
+
+plot(Effect(c("region"), m1))
+
+```
+
+> From the above plot we can see that, as shown by the model coefficients, the highest levels of total fertility can be seen in the *Africa* and *Near.East* reions.  The lowest levels can be seen in the countries in the *Asia* region.  The *Near.East* region shows a very large variance, with a lot of overlap with the *Africa* region, explaining why we could not reject the null hypothesis that $\beta_4 = 0$ for *Near.East* in part a. 
+
+
+#### d) Obtain a scatterplot for a model with both regressors.  Does this plot suggest that changes in the continuous regressor are associated with changes in the response? Does it suggest different slopes should be considered for different levels? Should different intercepts be considered?
+
+```{r}
+
+scatterplot(tfr ~ contraceptors | region, data=repro,
+            smooth=FALSE, boxplots=FALSE,
+            ylab="Total fertility rate")
+
+```
+
+> Because the slopes of the four lines in the plot above are not zero, this suggests that changes in the continuous regressor, *contraceptors*, are associated with changes in the expected response, *tfr*. Specifically, because the slopes for each region are decreasing, we can see that, in general, an increase in the percent of contraceptors used by married women of childbearing age is associated with a lower expected total fertility rate.
+
+> Furthermore, it is clear from the plot above that the slopes of the lines for the different factor levels are not completely identical, but they are not that different from oneanother either, in fact they seem relatively close to parallel. From this plot on these data, it seems as though there is no obvious need to consider different slopes for the four factor levels.
+
+> Similarly, it also appears that, while they are not identical, the intercepts of the lines for the four different factor levels appear to be quite similar and don't seem to have any obvious, significant, differences.  Thus it does not appear necessary for us to consider different intercepts for these factor levels.
+
+
+#### e) Obtain a model with an interaction and interpret three estimated coefficients, one related to the factor, one related to the continuous regressor, and one related to the interaction.
+
+```{r}
+
+m2 <- lm(tfr ~ region*contraceptors, data = repro)
+
+summary(m2)
+
+```
+
+> To answer this question, I will be interpreting the coefficients for *regionAsia*, *contraceptors*, and the interaction *regionAsia:contraceptors*.
+
+> First, we can see from the above summary that *regionAsia* shows an estimated slope of -0.322 which is quite non-significant though with a p-value of 0.57.  This means that this coefficient is not at all clearly different from zero, suggesting that we can't conclude there is any difference in the total fertility rate when we move from Africa to Asia, specifically when we consider a model that already includes the continuous regressor, and an interaction between it and the factor which are held constant.
+
+> Then, for the continuous regressor *contraceptors* we find a low, but significant (at $p = 1.41e^-08$), estimated coefficient value of -0.054.  This can be interpreted as meaning that every percentage increase in the contraceptive use among married women (holding the other regressor constant), we see an average decrease in the total fertility rate by 0.054 points.
+
+> Finally, when we examine an interaction term, specifically *regionAsia:contraceptors*, we see that there is a highly insignificant estimated coefficient, a result that is mirrored across all of the interaction terms.  This means that in this model we don't have the evidence to conclude that the slope of the regression tfr~contraceptors changes as we move between different factor levels, and here specifically from *regionAfrica* to *regionAsia*.  This is not suprising based on the plot seen in part d, where we saw that the slopes of the four different factor levels appeared to be quite similar.
+
+
+#### f) Should we include interactions in the model?  How about the continuous regressor?  The factor?
+
+```{r}
+
+fmtry1 <- lm(tfr ~ region + contraceptors, data = repro)
+summary(fmtry1)
+
+fmtry2 <- lm(tfr ~ contraceptors, data = repro)
+summary(fmtry2)
+
+```
+
+> From the previous result, it doesn't seem like it would be wise to include an interaction in this model.  We saw above in part e that none of the interaction terms were statistically significant, so it doesn't seem useful to include them.  The continuous regressor though seems worthy of inclusion in the model.  It was the only regressor which showed significance in the full model, and analysis of the scatterplot in part d suggests that *contraceptors* has useful explanatory potential in understanding changes in total fertility rate.  Finally, the two summary tables above, comparing the effects of including *region* in a model already containing *contraceptors* shows us that adding in the region regressor doesn't really add much to the model at all, explaining less than an additional 2% of the variation found in the response.  Addditionally, none of the factor levels are signifiacntly different from zero, only *regionAsia* comes close though it still has a relatively large p-value, this suggests that the inclusion of the factor in this model doesn't not have any significant explanatory value and so is not necessary.
+
+> So, it seems the final model should include the continuous regressor, but not the factor or an interaction between the two.
+
+#### g) Obtain a final model, and an effects plot and describe the plot.
+
+```{r}
+
+mfinal <- lm(tfr ~ contraceptors, data = repro)
+
+scatterplot(tfr ~ contraceptors, data=repro,
+            smooth=FALSE, boxplots=FALSE,
+            ylab="Total fertility rate")
+
+```
+
+> The above effects plot shows that in general, as the average rate of contraceptive use increases in a country, the expected total fertility rate decreases relatively linearally.
+
+
+#### h) Based on the chosen model, obtain and interpret a prediction interval for a new observation where the new value for the predictor is equal to its sample mean and the region is Asia.
+
+```{r}
+
+summary(repro)
+newdata <- data.frame(contraceptors = 37.44, region = "Asia")
+predict(mfinal, newdata, interval = "predict", level = 0.95)
+
+```
+
+> So, based on my chosen final model using just the regressor *contraceptors*, we can say that we are 95% confident that the true value for the total fertility rate of a country in the Asian region, and with a contraceptive usage percent of 37.44 is between 3.522 and 5.855 children per woman on average.
+
