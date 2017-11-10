@@ -1,7 +1,7 @@
 ---
-title: "S631 HW8"
+title: "S631 HW9"
 author: "Erik Parker"
-date: "October 21, 2017"
+date: "October 29, 2017"
 output: pdf_document
 ---
 
@@ -58,9 +58,14 @@ confint(mpar, level = 0.95)
 > So, based on my previous model, we see here that we are 95% confident that the true coefficient obtained when we move the females to males, is within the interval of 10.528 to 12.864.  This means that we are 95% confident that the true increase in height seen in 18 year olds in this study is between 10.528 cm and 12.864 cm when we move from females to males.
 
 
-### 2. Show the following equalitites: 
 
-Work in notebook, insert picture?
+![Handwritten proofs pg. 1](IMG_0305.jpg)
+
+![Handwritten proofs pg. 2](IMG_0302.jpg)
+
+![Handwritten proofs pg. 3](IMG_0303.jpg)
+
+![Handwritten proofs pg. 4](IMG_0304.jpg)
 
 
 ### ALR 6.4
@@ -94,10 +99,54 @@ anova(m1, m2)
 
 #### In addition, using the full model, perform the test $$ H_0 : \beta_{02} - \beta_{03} = 14~~and~~\beta_{12} + \beta_{13} =0.2$$ with $H_A :$ at least one equality doesn't hold.  Show your work.  In addition, how could you interpret this test?
 
+```{r, tidy=TRUE, echo=FALSE, include=FALSE}
+
+summary(m2)
+# here beta_02 corresponds to groupother, beta_03 to groupafrica, beta_12 to groupother:log(ppgdp) and beta_13 to groupafrica:log(ppgdp)
+
+# To compare level means like this, can use the formula outlined in section 5.1.2 and the corresponding code from class:
+
+# first for beta_02 - beta_03 = 14
+a=c(0,1,-1,0,0,0) 
+# here we use 1,-1 in the vector a to correspond to beta_02 and beta_03, respectively.
+se_b2b3=sqrt(t(a)%*%vcov(m2)%*%a)
+b2b3=as.numeric(coef(m2)[2]-coef(m2)[3]) 
+# so now have estimated difference between the two coefficients, and my standard error of the difference.
+t_val=(b2b3-14)/se_b2b3 
+# Now, to get the t-value I do my estimated value - the "true" difference of 14 that I am testing.
+p_val=2*(1-pt(abs(t_val),m2$df))
+c("test"="H0:b02-b03=14", "b02-b03"=b2b3,"SE"=se_b2b3,"t-Value"=t_val,"p-Value"=p_val)
+
+# Now testing beta_12 + beta_13 = 0.2
+a=c(0,0,0,0,1,1) 
+# here we use 1, 1 in the vector a to correspond to beta_12 and beta_13, respectively.
+se_b12b13=sqrt(t(a)%*%vcov(m2)%*%a)
+b12b13=as.numeric(coef(m2)[5]+coef(m2)[6]) 
+# so now have estimated sum of the two coefficients, and my standard error of that sum.
+t_val2=(b12b13-0.2)/se_b12b13 
+# Now, to get the t-value I do my estimated value - the "true" sum of 0.2 that I am testing against.
+p_val2=2*(1-pt(abs(t_val2),m2$df))
+c("test"="H0:b12-b13=0.2", "b12+b13"=b12b13,"SE"=se_b12b13,"t-Value"=t_val2,"p-Value"=p_val2)
+
+```
+
 ```{r}
 
 summary(m2)
 # here beta_02 corresponds to groupother, beta_03 to groupafrica, beta_12 to groupother:log(ppgdp) and beta_13 to groupafrica:log(ppgdp)
 
+# To compare level means like this, can use the corresponding code from class on 10.26.17:
+
+
+L = matrix(c(0, 1, -1, 0, 0, 0,
+             0, 0, 0, 0, 1, 1), 
+           byrow=TRUE, nrow=2)
+
+
+c.vector = c(14, 0.2)
+ht3 = linearHypothesis(m2, hypothesis.matrix = L, rhs = c.vector)
+ht3
+
 ```
 
+> So, with this large p-value (F-value?) from the test performed above, I would interpret this as meaning that there is not enough support to reject the null hypothesis that both $\beta_{02} - \beta_{03} = 14~~and~~\beta_{12} + \beta_{13} =0.2$, and so it appears that both equalities hold.
