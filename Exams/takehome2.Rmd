@@ -1,0 +1,166 @@
+---
+title: "S631 Takehome 2"
+author: "Erik Parker"
+date: "November 13, 2017"
+output: pdf_document
+---
+
+```{r setup, include=FALSE, message=FALSE, warning=FALSE, tidy=TRUE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE, tidy = TRUE)
+```
+
+On my honor, I have not had any form of communication about this exam with any other individual (including other students, teaching assistants, instructors, etc.)
+Signed: Erik Parker
+
+##### 1. Using OLS and a one-factor design:
+
+###### a. Determine if the expected response is significantly different when comparing each and any two factor levels.
+From the summary table (shown in appendix 1) we can see that the expected response is significantly different between the first omitted level, *echlocating bats*, and both of the second and third levels, *non-echolocating bats* and *non-echolocating birds*. So, as we move from the first level to the second, the average estimated log of energy use, *Energy*, for the group increases by 2.74. Likewise, as we move from the first level to the third, the average, estimated log of energy use increases by 2.14 units. Conversely, we can see that there is no significant difference in the expected response when we compare the factor levels *non-echolocating bats* and *non-echolocating birds*, as shown by the linear hypothesis test of the null that $\beta_2-\beta_3=0$, which returns a large p-value of 0.229. These conclusions are also supported by the effect plot in appendix 1, which shows clear differences between the first and second, and first and third levels but not the second and third.
+
+###### b. Is it meaningful to use *Type* to explain changes in *Energy*?
+Though we found above that there are not be equally significant contributions to explaining the response by all of the factor levels, the regressor *Type* does significantly help us explain variation seen in the response in general; at least in the case where it is the only regressor in the model. We can see this in the summary of the model, seen in appendix 1. The $R^2$ value of 0.595, means that the variable *Type* explains roughly 60% of the variation seen in the response - a significant portion. This conclusion is also supported by the anova run on this model, which returns a low p-value meaning that we can safely reject the null hypothesis that the mean function is fully explained by just the intercept, leading us to conclude that the addition of *Type* is meaningful.
+
+##### 2. Regress *Energy* on *Mass* using OLS.
+
+###### a. Is it appropriate to use a polynomial of degree 2?
+From the first ggpair plot in appendix 2, we can see that *Mass* is not normally distributed, and the first scatterplot between *Energy* and *Mass* shows a clear curved shape. However, we can see that when *Mass* is log transformed, the relationship between it and *Energy* becomes quite linear, and a quadratic term is no longer needed. This conclusion is supported by the comparison of the summaries of m2a (a regression of *Energy* on the un-transformed *Mass* variable with a quadratic component), and m2c (a regression of *Energy* on *logmass* with no quadratic term). The $R^2$ value for m2c is 0.98, much higher than that seen in m2a, meaning that the *logmass* variable alone explains 98% of the variation seen in the response. For completeness, anova was used to compare a model with a quadratic term of *logmass* (m2d) with m2c. Through this analysis we find we are unable to reject the null hypothesis that the reduced model (m2c) fully explains the mean function; so there is no need for a polynomial of degree 2 when *Mass* is log transformed.
+
+###### b. Is it meaningful to use *Mass* to explain changes in *Energy*?
+From the summary of previously mentioned m2c, where *Energy* is regressed on *logmass*, we see that it is extremely meaningful to use *Mass* to explain changes in energy. When it is the only regressor in the mean function, *logmass* explains 98% of the variation seen in the response, so it is an extremely useful regressor for explaining changes seen in *Energy*.
+
+##### 3. Use OLS and both predictors
+
+###### a. Should you use a model with interactions?
+When we use the transformed variable *logmass*, there is no need to include interactions in our model. Appendix 3 shows the results of a type II anova which, read bottom to top in keeping with the marginality principle, leads us to conclude that there is no value to including the interaction *Type:logmass* in our model. We can say this because the p-value for the test of the interaction term is large, meaning we can't reject the null hypothesis that the mean function is fully described by the reduced model containing just the main effects of *Type* and *logmass*, and so there is no evidence to support accepting the alternative hypothesis that the interaction contributes meaningfully to our understanding of the variation seen in the response.
+
+###### b. Choose the most appropriate model you can come up with. Justify your answer.
+The most appropriate model I can come up with is that shown by m2c, the simple regression of *Energy* on *logmass*. This is my chosen model for a number of reasons. First, we saw graphically in appendix 2, from the scatterplot of *Energy* on *logmass* that the log transformation of *Mass* lead to a near perfect linear relationship between the two variables. Secondly, the $R^2$ value for this model as reported in appendix 2 is 98%, meaning that only through the use of this one regressor we are able to explain almost all of the variation seen in the response - supporting mathematically what we saw graphically. Finally, the anova test performed on the full model in appendix 3 clearly shows that the interaction between *Type* and *logmass* is not significant, and neither is *Type* itself when added to a model that already contains *logmass*. That is, the test for the significance of *Type* (the first line of the type II Anova table) returns a p-value of 0.67, meaning that we are unable to reject the null hypothesis that the mean function is fully explained by *logmass* and so there is no need to add *Type* to a model already containing the other regressor.
+
+##### 4. Use your selected model from part 3.
+
+###### a. Is the assumption of constancy of variance (homoscedasticity) appropriate? Perform at least two reasonable tests to justify your response.
+Though not a true "test," the first step taken was to examine a plot of the residual versus fitted values from this model. As can be seen in appendix 4, there is no obvious violation of homoscedasticity uncovered by this plot. At first glance the variance does appear to be higher on the right than on the left side of the plot, but upon further inspection this seems to be explainable due to there simply being more points on the right hand side of the plot, and so more vertical spread of the points.  
+First, the `ncvTest` command was used to perform a test of the null hypothesis that the variance of the selected model is constant. As can be seen in appendix 4, this test returned a p-value of 0.41, thus not allowing us to reject our null hypothesis and leading us to the conclusion that the chosen model does have constant variance, and so follows the assumption of homoscedasticity.  
+Next, the `ols_f_test` command was used to perform an F-test where the residuals of the model were partitioned into two groups: one with the residuals for the smallest fitted values, and one with the residuals of the largest fitted values. Treating these two groups as potentially different populations, this method then tested the null hypothesis that $H_0 : \sigma^2_1 = \sigma^2_2$ versus the alternative that $H_A : \sigma^2_1 \neq \sigma^2_2$. Here this test retured a p-value of 0.35, meaning we can't reject the null hypothesis that the variance is the same for the two groups - further supporting our conclusion of constancy of variance for these data.
+
+###### b. Compare two 98% confidence intervals for the coefficient of Mass, by using OLS or OLS corrected with the sandwich estimator.
+In appendix 4, it can be seen that the 98% confidence intervals obtained for the estimated coefficient of *Mass* (here *logmass* from my chosen model) are quite similar. The normal OLS confidence interval shows a range of 2.096 to 2.404, while the sandwich corrected OLS interval shows a range of 2.104 to 2.395 when untransformed and expressed as *Mass*. So, in this instance, the confidence interval for the sandwich estimator corrected OLS is slightly narrower than that of the un-corrected OLS, but there isn't a large difference overall.
+
+\newpage
+
+## Appendix
+
+-----
+
+# 1.
+
+```{r}
+
+rm(list=ls())
+
+library(alr4)
+
+flight <- read.table("takehome2.txt", header = TRUE)
+
+m1a <- lm(Energy ~ Type, data = flight)
+
+#Shows significant difference between level 1 and 2, and 1 and 3
+summary(m1a)
+
+# Test of significance for beta2-beta3=0
+linearHypothesis(m1a, c(0,1,-1))
+
+plot(Effect(c("Type"),m1a))
+
+Anova(m1a)
+
+```
+
+-----
+
+\newpage
+
+# 2. 
+
+```{r}
+
+library(GGally)
+
+flight$logmass <- log(flight$Mass)
+
+ggpairs(flight)
+
+
+scatterplot(Energy ~ Mass, data = flight, boxplots = FALSE, smoother = FALSE)
+
+
+scatterplot(Energy ~ logmass, data = flight, boxplots = FALSE, smoother = FALSE)
+
+
+m2a <- lm(Energy ~ Mass + I(Mass^2), data = flight)
+
+#polynomial model
+summary(m2a)
+
+m2b <- lm(Energy ~ Mass, data = flight)
+
+# non-polynomial model
+summary(m2b)
+
+m2c <- lm(Energy ~ logmass, data = flight)
+
+summary(m2c)
+
+m2d <- lm(Energy ~ logmass + I(logmass^2), data = flight)
+
+summary(m2d)
+
+anova(m2c, m2d)
+
+```
+
+------
+
+\newpage
+
+# 3. 
+
+```{r}
+
+mfull <- lm(Energy ~ Type*logmass, data = flight)
+
+Anova(mfull)
+
+```
+
+-----
+
+\newpage
+
+# 4. 
+
+```{r}
+
+plot(m2c,which = 1,add.smooth=F)
+
+ncvTest(m2c)
+
+library(olsrr)
+
+ols_f_test(m2c)
+
+library(lmtest)
+
+# OLS confidence interval
+OLS <- confint(m2c, level = 0.98)
+
+# Exponentiated interval
+exp(OLS)
+
+# OLS sandwich estimator corrected confidence interval
+OLSsand <- coefci(m2c, level = 0.98, vcov=hccm)
+
+# Exponentiated sandwich corrected interval
+exp(OLSsand)
+
+```
