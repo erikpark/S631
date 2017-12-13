@@ -1,0 +1,194 @@
+---
+title: "S631 Final Takehome"
+author: "Erik Parker"
+date: "December 12th, 2017"
+output: pdf_document
+---
+
+```{r setup, include=FALSE, message=FALSE, warning=FALSE, tidy=TRUE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE, tidy = TRUE)
+```
+
+On my honor, I have not had any form of communication about this exam with any other individual (including other students, teaching assistants, instructors, etc.)
+Signed: Erik Parker
+
+#### Use the data *Angell.txt*, in that data use *moralIntegration* as the response and all other variables as predictors.
+
+##### 1. Using methods and techniques learned in class to determine: Which predictors to include, if polynomials and/or interactions should be included, if weights or other adjustments should be used for the variance, if transformations to predictors and/or the response should be considered.
+
+>Based on all of the tests and analysis shown in appendix 1, we see first that *heterogeneity* and *mobility* should both be log transformed. This was seen visually from analysis of the scatterplot, the summary of the data, and most directly from when we performed the box-cox method using *powerTransform* while considering the factor, *region*. That being said, F-tests of multiple potential models found that the only predictors to be included in the final model are *heterogeneity* and *region* as even when properly transformed, *mobility* is still found to not significantly improve the explanatory power of the model when the other two regressors are present. Furthermore, no interactions or polynomials need to be included in the model, as the interaction between *log(heterogeneity)* and *region* was shown to be non-significant through F-testing, as was the polynomial term for *heterogeneity*. And finally, we also see from the *ncvTest* that no weights or adjustments need to be used for the variance as this test returned a large p-value, meaning we can't reject the null hypothesis that the chosen model has constant variance. The final model then is *moralIntegration ~ log(heterogeneity) + region*.
+
+
+##### 2. Based on the model obtained so far: interpret at least two coefficient estimates, perform an analysis of residuals and determine if any assumptions made about the mean and variance are appropriate, and make any appropriate changes to the model.
+
+>First, an interpretation of the coefficient for *log(heterogeneity)* as shown in appendix 2. This coefficient estimate corresponds change in expected value of the response, *moralIntegration*, for every unit increase in the regressor *log(heterogeneity)*, when all other regressors are kept constant. So, a coefficient of -1.8926 here tells us that for every unit increase in *log(heterogeneity)*, we see an decrease of *moralIntegration* by 1.8926 units. This can also be expressed as an increase in *heterogeneity* by $exp(1) = 2.7183$ units leads to a decrease in *moralIntegration* by 1.8926 units, regardless of the level of the other regressor, *region*.  
+
+>Next, an interpretation of the estimated coefficient for *regionS* as shown in appendix 2. This estimated coefficient value corresponds to the difference between the sample mean for the baseline level, *regionE*, and this new level, *regionS*, when all other regressors are kept constant. Put another way, we can say that when we move from the Northeast region to the South region, the expected value of our response, *moralIntegration* decreases by 6.11 units on average when we keep the continuous regressor, *log(heterogeneity)* constant.  
+
+>Finally, an interpretation of the coefficient for *regionMW*. This coefficient estimate corresponds to the change in intercept of the regression line as we move from level *regionE* to *regionMW*, while keeping *log(heterogeneity)* constant. The coefficient of -3.2169 tells us that as we move from the Northeast region to the Midwest one, there is a decrease in *moralIntegration* of 3.2169 units, when we keep *log(heterogeneity)* constant.  
+
+>Finally, when examining the residuals, it's clear that the plots contained in appendix 2 resemble null-plots with no curvature (so no need to alter the mean function), and no heteroskedasticity (so no need to adjust the variance). So, from this there seems to be no need to change the chosen model yet.
+
+
+##### 3. With the resulting model from part 2, perform an influence anaylsis by doing the following. First, use Cook's distance to determine which observations are the most influential (up to 4), then determine which observations if any could be considered outliers, finally, compare the coefficient estimates obtained with and without the selected influential observations.
+
+>From the *influenceIndexPlot* command shown in appendix 3 we can see that the four most influential observations are Tulsa, Portland (my hometown!), Denver, and Rochester. Though they are the most influential, their values of $D_i$ are still quite small and far below 1, we can say that removal of any of these cases likely won't change our $\hat{\beta}$ estimates much at all, per ALR section 9.5.2.  
+
+>From the *outlierTest* command, we can see that the largest "outlier", Tulsa, has an insignificant unadjusted p-value and thus an insignificant Bonferonni p-value. This means that there are no observations in this data which could be considered outliers, a conclusion also reflected in the third panel of the diagnostic plot.  
+
+>Though earlier analysis of the Cook's distance plot revealed that removal of influential observations wasn't really necessary here, it was performed for the sake of this exercise. When we remove the four most influential observations as identified above, we see that the estimated coefficients do change noticeably across the board.  In general, the coefficients for the factor levels decrease (become less negative) by roughly 0.5 to 1 units, while the estimates for the intercept (factor level *Northeast*) and the continuous regressor increase (become more negative) by about 0.5 units. So it seems that while no one observation was highly influential, removing four of them at once did enough to change the results of the model noticeably.
+
+
+\newpage
+
+## Appendix
+
+-----
+
+# 1.
+
+```{r}
+
+rm(list=ls())
+
+library(alr4)
+
+angell <- read.table("Angell.txt")
+
+summary(angell)
+
+
+scatterplotMatrix(angell, smoother = FALSE)
+# heterogeneity probably needs a transformation, others look okay.
+
+angell$loghet <- log(angell$heterogeneity)
+
+scatterplotMatrix(angell, smoother = FALSE)
+# After transformation, relationship of heterogeneity with moralIntegration, and distribution looks better.
+
+bc1 = powerTransform(cbind(heterogeneity, mobility) ~ 1, angell)
+summary(bc1)
+# So from this, heterogeneity seems to need a log transformation, mobility is fine.
+
+bc2 = powerTransform(cbind(heterogeneity, mobility) ~ region, angell)
+summary(bc2)
+# But when we consider the factor, region, that will likely be included in the model, it seems both the continuous regressors need to be log transformed.
+
+m1 <- lm(moralIntegration ~ log(heterogeneity) + mobility + region, data = angell)
+summary(m1)
+
+Anova(m1)
+# Here, looks like only log(het) is needed, but lets try dropping mobility, as it has the larger p-value when the other regressors are considered.
+
+m1a <- lm(moralIntegration ~ log(heterogeneity) + log(mobility) + region, data = angell)
+Anova(m1a)
+
+m2 <- lm(moralIntegration ~ log(heterogeneity) + region, data = angell)
+
+anova(m2,m1)
+# Here we see that we can't reject the null that the reduced model without mobility is good.
+
+anova(m2,m1a)
+# log transformed mobility improves the model, but we still can't reject the null that the model without mobility is good enough.
+
+m2b <- lm(moralIntegration ~ log(heterogeneity) + mobility , data = angell)
+
+anova(m2b,m1)
+# But, this test also tells us that we can't reject the null that the model without region is good.
+
+Anova(m2)
+
+Anova(m2b)
+
+summary(m2)
+
+summary(m2b)
+
+# Let's try adding an interaction between mobility and region maybe, first let's look at R^2 values of models with only those two though, to try and determine if they explain similar data.
+
+m3a <- lm(moralIntegration ~ region, data = angell)
+m3b <- lm(moralIntegration ~ log(mobility), data = angell)
+summary(m3a)
+summary(m3b)
+# region explains more variation by itself alone, may not need mobility.
+m3c <- lm(moralIntegration ~ mobility + region, data = angell)
+summary(m3c)
+# lots of shared explanatory potential, R^2 barely increases when both present.
+m3d <-lm(moralIntegration ~ mobility*region, data = angell)
+summary(m3d)
+Anova(m3d)
+# interaction not significant.
+m3e <- m3c <- lm(moralIntegration ~ log(mobility) + region, data = angell)
+Anova(m3e)
+
+Anova(m3c)
+# mobility not needed, even when log transformed.
+
+# So, seems like we might need both log(heterogeneity) and region, but not mobility.
+
+m4a <- lm(moralIntegration ~ log(heterogeneity)*region, data = angell)
+Anova(m4a)
+anova(m2,m4a)
+# interaction between these two final regressors not significant though.
+# So, final model for now is m2.
+
+m2poly <- lm(moralIntegration ~ log(heterogeneity) + region + I(log(heterogeneity)^2), data = angell)
+summary(m2poly)
+# No need for the polynomial term
+
+
+# Now, should we transform the predictor after we have this final model?
+
+summary(powerTransform(m2))
+inverseResponsePlot(m2)
+
+# So, won't need to transform the response based on this.
+
+# Should we include polynomials?
+
+rp2 <- residualPlots(m2)
+rp2
+# So, no polynomial seems to be needed.
+
+# Finally, let's look at the variance.
+
+ncvTest(m2)
+# High p-value, can't reject null that the variance of this function is constant.
+
+```
+
+-----
+
+\newpage
+
+# 2.
+```{r}
+
+scatterplot(moralIntegration ~ log(heterogeneity) | region, data = angell, smooth = FALSE, boxplots = FALSE)
+
+summary(m2)
+
+residualPlots(m2)
+# Again, the residuals look fine. Look like null-plots with no curvature and/or fan-shape.
+
+
+```
+
+-----
+
+\newpage
+
+# 3.
+```{r}
+
+influenceIndexPlot(m2, id.n = 4)
+
+#Directly testing for outliers
+outlierTest(m2)
+
+m2out <- update(m2, subset=-c(41,29,12,1))
+
+summary(m2)
+summary(m2out)
+
+```
